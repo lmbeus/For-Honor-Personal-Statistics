@@ -44,15 +44,15 @@ for i in hero_list:
 
 #Prompt for hero played/played against, win or loss, magnitude of win or loss and relative skill
 #FIXME: Add menu option 4
+print("Welcome to your personal For Honor statistics calculator!")
 while user_input != "q":
     print("""
-    Welcome to your personal For Honor statistics calculator!
-
     Main Menu:
     Press 1 to see the list of heroes
     Press 2 to enter new data
-    Press 3 to calculate statistics
-    Press m at any time to return to  main menu
+    Press 3 to calculate new statistics
+    Press 4 to show most recent statistics
+    Press m at any time to return to main menu
     Press q at any time to quit the program
         """)
     user_input = input()
@@ -151,28 +151,56 @@ while user_input != "q":
 
             hero_data = f.update_data(match_result, skill_level, result_mag, row_num, new_data)
             np.save(outfile, new_data)
-            outfile.close
-            
-            #Ask if they would like to quit or return to menu or calculate statistics
+            outfile.close   
             break
-    
-        elif (user_input == "q") or (user_input == "m"):
+        continue
+
+    elif user_input == "3":
+        print("Calculating statistics, please stand by :)")
+
+        file_list = []
+        data_list = []
+
+        #Initilaize point weights for calculations
+        #wins
+        h30 = 5
+        s30 = h31 = 4
+        l30 = s31 = h32 = 3
+        s32 = l31 = 2
+        l32 = 1
+        #losses
+        h23 = -1
+        s23 = h13 = -2
+        l23 = s13 = h03 = -3
+        s03 = l13 = -4
+        l03 = -5
+
+        #Load overall data into numpy array
+        file = open("Overall_data", "rb")
+        overall_data = np.load(file)
+        file.close
+        #Load the hero data into a list of seperate numpy arrays
+        hero_list_it = iter(hero_list)
+        next(hero_list_it, None)
+        for i, j in enumerate (hero_list_it):
+            file_list.append(open(j + "_data", "rb"))
+            data_list.append(np.load(file_list[i]))
+            file_list[i].close()
+
+        #Calcualte the overall statistics
+
+        #Calculate the statistics for each hero
+         
+
+
+   
+    elif (user_input == "q") or (user_input == "m"):
         continue
     else:
         print("Invalid Response")
-        continue
+
     continue
-    ##Next menu options - calculate statistics or close program
-    #if user_input == 
-    #while menu_check != "q":
-    #    user_input = input("Would you like to calculate statistics? Please enter 'yes' or 'no'\n\n")
-    #    if user_input == "no":
-    #        print("Goodbye :)")
-    #        program_check = "q"
-    #        break;
-    #    elif (user_input != "yes") and (user_input != "no"):
-    #        print("Invalid input, please try again")
-    #        continue
+
     #    if user_input == "yes":
     #        print("Which statistics would you like to calculate? Select an option below:\\n")
     #        print("""

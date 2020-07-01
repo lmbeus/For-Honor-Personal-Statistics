@@ -3,7 +3,6 @@ import numpy as np
 import math
 import functions as f
 
-
 #Initialize menu variables
 hero = 'nobody'
 enemy = 'still nobody'
@@ -25,7 +24,7 @@ overall_data = np.zeros((1, 20))
 warden_data = conq_data = pk_data = law_data = cent_data = glad_data = bp_data = np.zeros((26, 20))
 raider_data = warlord_data = zerk_data = valk_data = high_data = shaman_data = jorm_data = np.zeros((26,20))
 kensei_data = goki_data = roach_data = nobu_data = shinobi_data = musha_data = hito_data = np.zeros((26,20))
-tiandi_data = jun_data = nuxia_data = shaolin_data = zhanhu_data =  np.zeros((26,20))
+tiandi_data = jun_data = nuxia_data = shaolin_data = zhanhu_data = np.zeros((26,20))
 
 data_list = [overall_data, warden_data, conq_data, pk_data, law_data, cent_data, glad_data, bp_data, raider_data, warden_data, zerk_data, valk_data, 
              high_data, shaman_data, jorm_data, kensei_data, goki_data, hito_data, nobu_data, shinobi_data, musha_data, hito_data,
@@ -188,8 +187,51 @@ while user_input != "q":
             file_list[i].close()
 
         #Calcualte the overall statistics
+        #Initialize statistics variables
+        total_wins = -1 
+        total_losses = -1
+        total_win_ratio = -1
+
+        #Fill the statistics variables with the data from the files
+        total_wins = overall_data[0,0]
+        total_losses = overall_data[0,1]
+        total_win_ratio = round(total_wins / total_loses, 2)
+
+        #FIXME: Comment out the next section and test the overall stats - clear the data files first and input controlled/test data to make sure it works
 
         #Calculate the statistics for each hero
+        #Initialize variables - create an array of statistics for each hero in the game
+        warden_stats = conq_stats = pk_stats = law_stats = cent_stats = glad_stats = bp_stats = np.zeros(82)
+        raider_stats = warlord_stats = zerk_stats = valk_stats = high_stats = shaman_stats = jorm_stats = np.zeros(82)
+        kensei_stats = goki_stats = roach_stats = nobu_stats = shinobi_stats = musha_stats = hito_stats = np.zeros(82)
+        tiandi_stats = jun_stats = nuxia_stats = shaolin_stats = zhanhu_stats = np.zeros(82)
+
+        stats_list = [warden_stats, conq_stats, pk_stats, law_stats, cent_stats, glad_stats, bp_stats, raider_stats, warden_stats, zerk_stats, valk_stats, 
+             high_stats, shaman_stats, jorm_stats, kensei_stats, goki_stats, hito_stats, nobu_stats, shinobi_stats, musha_stats, hito_stats,
+             tiandi_stats, jun_stats, nuxia_stats, shaolin_stats, zhanhu_stats]
+
+        #Calcualte the statistics and store them inside each hero stat array
+        for i, j in enumerate(stats_list):
+            #Calcualte the total wins and losses and win ratio for the hero
+            data_sums = np.sum(file_list[i], axis = 0)
+            j[0] = data_sums[0]
+            j[1] = data_sums[1]
+            j[2] = round(j[0] / j[1], 2)
+            
+            #calculate the wins, losses, and win ratio against each hero
+            for k in range(26):
+                j[3 + k] = np.sum(file_list[i][k, 2:12])
+                j[29 + k] = np.sum(file_list[i][k, 13:27])
+                j[55 + k] = round(j[3 + k] / j[29 + k], 2)
+
+        #FIXME: Calculate the matchup score (score vs each hero) based on the point system using the weights defined above
+        #FIXME: Append the matchup score to the appropriate hero stats array - (should be the final element in the array)
+        #Test the arrays, make sure the statistic is correct - fill some data, and calculate it by hand then compare it to the code's output
+        #FIXME: Once tested and all is well, move the hero_stats section over to a function (make it as slick looking as possible)
+
+                          
+        #In menu option 4 output the wanted statistics        
+                
          
 
 
@@ -201,23 +243,6 @@ while user_input != "q":
 
     continue
 
-    #    if user_input == "yes":
-    #        print("Which statistics would you like to calculate? Select an option below:\\n")
-    #        print("""
-    #        1. Overall data 
-    #        2. Hero data   
-    #        """)
-    #        user_input = input("Please enter '1' or '2'\\n")
- 
-
-
-    #FIX ME: Determine the overall data (total wins, total losses, win %)
-   
-    #FIX ME: Determine the data for the hero you played as (total wins, total losses, win %
-    #   wins/losses against specific heroes, win % against specific heroes) 
-    #   calculate the matchup score (higher = better) for each hero
-    
-    #FIX ME: Determine the best hero using the average of all matchup scores (higher = better)
        
 
 

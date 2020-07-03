@@ -147,11 +147,11 @@ while user_input != "q":
                 if enemy == j:
                     row_num = i - 1
                     break
-
             hero_data = f.update_data(match_result, skill_level, result_mag, row_num, new_data)
             np.save(outfile, new_data)
             outfile.close   
             break
+
         continue
 
     elif user_input == "3":
@@ -159,6 +159,7 @@ while user_input != "q":
 
         file_list = []
         data_list = []
+        hero_scores = np.zeros(26)
 
         #Initilaize point weights for calculations
         #wins
@@ -188,23 +189,17 @@ while user_input != "q":
 
         #Calcualte the overall statistics
         #Initialize statistics variables
-        total_wins = -1 
-        total_losses = -1
-        total_win_ratio = -1
-
-        #Fill the statistics variables with the data from the files
         total_wins = overall_data[0,0]
         total_losses = overall_data[0,1]
-        total_win_ratio = round(total_wins / total_loses, 2)
-
+        total_win_ratio = round(total_wins / total_losses, 2)
         #FIXME: Comment out the next section and test the overall stats - clear the data files first and input controlled/test data to make sure it works
 
         #Calculate the statistics for each hero
         #Initialize variables - create an array of statistics for each hero in the game
-        warden_stats = conq_stats = pk_stats = law_stats = cent_stats = glad_stats = bp_stats = np.zeros(82)
-        raider_stats = warlord_stats = zerk_stats = valk_stats = high_stats = shaman_stats = jorm_stats = np.zeros(82)
-        kensei_stats = goki_stats = roach_stats = nobu_stats = shinobi_stats = musha_stats = hito_stats = np.zeros(82)
-        tiandi_stats = jun_stats = nuxia_stats = shaolin_stats = zhanhu_stats = np.zeros(82)
+        warden_stats = conq_stats = pk_stats = law_stats = cent_stats = glad_stats = bp_stats = np.zeros(108)
+        raider_stats = warlord_stats = zerk_stats = valk_stats = high_stats = shaman_stats = jorm_stats = np.zeros(108)
+        kensei_stats = goki_stats = roach_stats = nobu_stats = shinobi_stats = musha_stats = hito_stats = np.zeros(108)
+        tiandi_stats = jun_stats = nuxia_stats = shaolin_stats = zhanhu_stats = np.zeros(108)
 
         stats_list = [warden_stats, conq_stats, pk_stats, law_stats, cent_stats, glad_stats, bp_stats, raider_stats, warden_stats, zerk_stats, valk_stats, 
              high_stats, shaman_stats, jorm_stats, kensei_stats, goki_stats, hito_stats, nobu_stats, shinobi_stats, musha_stats, hito_stats,
@@ -213,20 +208,28 @@ while user_input != "q":
         #Calcualte the statistics and store them inside each hero stat array
         for i, j in enumerate(stats_list):
             #Calcualte the total wins and losses and win ratio for the hero
-            data_sums = np.sum(file_list[i], axis = 0)
+            data_sums = np.sum(data_list[i], axis = 0)
             j[0] = data_sums[0]
             j[1] = data_sums[1]
-            j[2] = round(j[0] / j[1], 2)
-            
-            #calculate the wins, losses, and win ratio against each hero
+            j[2] = round(j[0] / j[1], 2)            
+            #calculate the total wins, total losses, and win ratio against each hero 
             for k in range(26):
-                j[3 + k] = np.sum(file_list[i][k, 2:12])
-                j[29 + k] = np.sum(file_list[i][k, 13:27])
-                j[55 + k] = round(j[3 + k] / j[29 + k], 2)
+                j[3 + k] = np.sum(data_list[i][k, 2:11]) #wins
+                j[29 + k] = np.sum(data_list[i][k, 12:20]) #losses
+                j[55 + k] = round(j[3 + k] / j[29 + k], 2) #win ratio           
+                #Calcualte hero scores using the appropriate weights
+        for i, j in enumerate(stats_list):
+            for k in range(26):
+                a = data_list[i] #for simpler code
+                sum_wins =  sum(h30 * a[k, 2], s30 * a[k, 3], l30 * a[k, 4], h31 * a[k, 5], s31 * a[k, 6], l31 * a[k, 7],
+                                h32 * a[k, 8], s32 * a[k, 9], l32 * a[k, 10])
+                sum_losses = sum(h03 * a[k, 11], s03 * a[k, 12], l03 * a[k, 13], h13 * a[k, 14], s13 * a[k,15], l13 * a[k, 16],
+                                 h23 * a[k, 17], s23 * a[k, 18], l23 * a[k, 19])
+                j[k + 81] = sum_wins + sum_losses #The last 26 (81-106) are the match-up scores
+       
+            j[107] = np.sum(stats_list[i][81:107]) / 26 #Take the average of each match-up score to determine overall hero score 
 
-        #FIXME: Calculate the matchup score (score vs each hero) based on the point system using the weights defined above
-        #FIXME: Append the matchup score to the appropriate hero stats array - (should be the final element in the array)
-        #Test the arrays, make sure the statistic is correct - fill some data, and calculate it by hand then compare it to the code's output
+        #FIXME: Test overall statistics then test individual hero statistics
         #FIXME: Once tested and all is well, move the hero_stats section over to a function (make it as slick looking as possible)
 
                           

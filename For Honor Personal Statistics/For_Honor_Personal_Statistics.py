@@ -31,7 +31,7 @@ data_list = [overall_data, warden_data, conq_data, pk_data, law_data, cent_data,
              tiandi_data, jun_data, nuxia_data, shaolin_data, zhanhu_data]
 
 #Creating/Initializing files to save the statistics to
-here = os.path.dirname(os.path.abspath('functions.py'))
+#FIXME: Turn this into a function
 for i in hero_list:
     if os.path.isfile(i + "_data"):
         pass
@@ -66,7 +66,7 @@ while user_input != "q":
     elif user_input == "2":
         while user_input != "q":
             user_input = str(input("What hero did you play as? Please enter hero name\n"))
-            hero = user_input.capitalize()
+            hero = user_input.title()
             if (user_input == "q") or (user_input == "m"):
                 break             
             elif hero not in hero_list:
@@ -74,7 +74,7 @@ while user_input != "q":
                 continue        
             
             user_input = input("Who did you play against? Please enter hero name\n")
-            enemy = user_input.capitalize()
+            enemy = user_input.title()
             if (user_input == "q") or (user_input == "m"):
                 break
             if enemy not in hero_list:
@@ -159,7 +159,8 @@ while user_input != "q":
 
         file_list = []
         data_list = []
-        hero_scores = np.zeros(26)
+        stats_list = []
+        overall_stats = []
 
         #Initilaize point weights for calculations
         #wins
@@ -174,6 +175,17 @@ while user_input != "q":
         l23 = s13 = h03 = -3
         s03 = l13 = -4
         l03 = -5
+        
+        #Create statistics files if they do not already exist and fill the statistics with zeros
+        if os.path.isfile("Overall_stats") and os.path.isfile("Hero_stats"):
+            pass
+        else:
+            file1 = open("Overall_stats", "wb")
+            file2 = open("Hero_stats", "wb")
+            np.save(file1, np.zeros(3))
+            np.save(file2, np.zeros(108))
+            file1.close
+            file2.close
 
         #Load overall data into numpy array
         file = open("Overall_data", "rb")
@@ -189,56 +201,90 @@ while user_input != "q":
 
         #Calcualte the overall statistics
         #Initialize statistics variables
-        total_wins = overall_data[0,0]
-        total_losses = overall_data[0,1]
-        total_win_ratio = round(total_wins / total_losses, 2)
-        #FIXME: Comment out the next section and test the overall stats - clear the data files first and input controlled/test data to make sure it works
+        overall_wins = overall_data[0,0]
+        overall_losses = overall_data[0,1]
+        overall_win_ratio = round((total_wins / (total_losses + total_wins)) * 100, 2)
+        overall_stats = np.array([overall_wins, overall_losses, overall_win_ratio])
 
         #Calculate the statistics for each hero
         #Initialize variables - create an array of statistics for each hero in the game
-        warden_stats = conq_stats = pk_stats = law_stats = cent_stats = glad_stats = bp_stats = np.zeros(108)
-        raider_stats = warlord_stats = zerk_stats = valk_stats = high_stats = shaman_stats = jorm_stats = np.zeros(108)
-        kensei_stats = goki_stats = roach_stats = nobu_stats = shinobi_stats = musha_stats = hito_stats = np.zeros(108)
-        tiandi_stats = jun_stats = nuxia_stats = shaolin_stats = zhanhu_stats = np.zeros(108)
+        warden_stats = conq_stats = pk_stats = law_stats = cent_stats = glad_stats = bp_stats = []
+        raider_stats = warlord_stats = zerk_stats = valk_stats = high_stats = shaman_stats = jorm_stats = []
+        kensei_stats = goki_stats = roach_stats = nobu_stats = shinobi_stats = musha_stats = hito_stats = []
+        tiandi_stats = jun_stats = nuxia_stats = shaolin_stats = zhanhu_stats = []
 
         stats_list = [warden_stats, conq_stats, pk_stats, law_stats, cent_stats, glad_stats, bp_stats, raider_stats, warden_stats, zerk_stats, valk_stats, 
              high_stats, shaman_stats, jorm_stats, kensei_stats, goki_stats, hito_stats, nobu_stats, shinobi_stats, musha_stats, hito_stats,
              tiandi_stats, jun_stats, nuxia_stats, shaolin_stats, zhanhu_stats]
 
-        #Calcualte the statistics and store them inside each hero stat array
-        for i, j in enumerate(stats_list):
+        ##Calcualte the statistics and store them inside each hero stat array
+        for i in range(len(stats_list)):
+            a = data_list[i] #for simpler code
+            stats_list[i] = (np.zeros(108))
             #Calcualte the total wins and losses and win ratio for the hero
-            data_sums = np.sum(data_list[i], axis = 0)
-            j[0] = data_sums[0]
-            j[1] = data_sums[1]
-            j[2] = round(j[0] / j[1], 2)            
+            stats_list[i][0] =  np.sum(a[0:26, 0])
+            stats_list[i][1] =  np.sum(a[0:26, 1])
+            total = stats_list[i][0] + stats_list[i][1]
+            if total != 0:
+                stats_list[i][2] = round(stats_list[i][0] / (total) * 100, 2)  
+            else:
+                stats_list[i][2] = 0
             #calculate the total wins, total losses, and win ratio against each hero 
             for k in range(26):
-                j[3 + k] = np.sum(data_list[i][k, 2:11]) #wins
-                j[29 + k] = np.sum(data_list[i][k, 12:20]) #losses
-                j[55 + k] = round(j[3 + k] / j[29 + k], 2) #win ratio           
+                stats_list[i][3 + k] = a[k, 0] #wins
+                stats_list[i][29 + k] = a[k, 1] #losses
+                total = stats_list[i][3 + k] + stats_list[i][29 + k]
+                if total != 0:
+                    stats_list[i][55 + k] = round(stats_list[i][3 + k] / total, 2) #win ratio
+                else:
+                    stats_list[i][55 + k] = 0       
                 #Calcualte hero scores using the appropriate weights
-        for i, j in enumerate(stats_list):
-            for k in range(26):
-                a = data_list[i] #for simpler code
-                sum_wins =  sum(h30 * a[k, 2], s30 * a[k, 3], l30 * a[k, 4], h31 * a[k, 5], s31 * a[k, 6], l31 * a[k, 7],
-                                h32 * a[k, 8], s32 * a[k, 9], l32 * a[k, 10])
-                sum_losses = sum(h03 * a[k, 11], s03 * a[k, 12], l03 * a[k, 13], h13 * a[k, 14], s13 * a[k,15], l13 * a[k, 16],
-                                 h23 * a[k, 17], s23 * a[k, 18], l23 * a[k, 19])
-                j[k + 81] = sum_wins + sum_losses #The last 26 (81-106) are the match-up scores
-       
-            j[107] = np.sum(stats_list[i][81:107]) / 26 #Take the average of each match-up score to determine overall hero score 
+                sum_wins = (h30 * a[k, 2] + s30 * a[k, 3] + l30 * a[k, 4] + h31 * a[k, 5] + s31 * a[k, 6] + l31 * a[k, 7] +
+                                h32 * a[k, 8] + s32 * a[k, 9] + l32 * a[k, 10])
+                sum_losses = (h03 * a[k, 11] + s03 * a[k, 12] + l03 * a[k, 13] + h13 * a[k, 14] + s13 * a[k,15] + l13 * a[k, 16] +
+                                 h23 * a[k, 17] + s23 * a[k, 18] + l23 * a[k, 19])
+                stats_list[i][81 + k] = (sum_wins + sum_losses) #The last 26 (81-106) are the match-up scores
+            stats_list[i][107] = np.sum(stats_list[i][81:107]) / 26 #Take the average of each match-up score to determine overall hero score
+        print(stats_list[0])
 
+        #Save the statistics arrays to the corresponding files
+        file1 = open("Overall_stats", "wb")
+        file2 = open("Hero_stats", "wb")
+        np.save(file1, overall_stats)
+        np.save(file2, stats_list)
+        file1.close
+        file2.close
         #FIXME: Test overall statistics then test individual hero statistics
         #FIXME: Once tested and all is well, move the hero_stats section over to a function (make it as slick looking as possible)
 
                           
-        #In menu option 4 output the wanted statistics        
+        #In menu option 4 output the wanted statistics  
+    elif(user_input == "4"):      
+        print("""
+        What statistics would you like to see?
+        a. Overall statistics
+        b. Individual Hero statistics 
+        """)
+        stat_option = input("Select option 'a' or 'b'\n")
+        if stat_option == 'a':
+            #FIXME: Put this into a function
+            #FIXME: calculate the best and worst hero using the max and min values from each hero stat array (create a new array just containing the hero scores then do it)
+            with open("Overall_stats", "rb") as file:
+                stats = np.load(file)
+                print("""
+                Total wins: {0}
+                Total losses: {1}
+                Win ratio: {2}
+                """.format(stats[0], stats[1], stats[2]))
+        if stat_option == 'b':
+            #FIXME: Put this into a function
+            with open("Hero_stats") as file:
+                stats = np.load(file)
+                #FIXME: determine the best 3 matchups and worst 3 matchups from the appropriate elements from the stat array
+                #FIXME: print wins, losses, ratio, best matchups, worst matchups, overall hero score
+
                 
          
-
-
-   
     elif (user_input == "q") or (user_input == "m"):
         continue
     else:

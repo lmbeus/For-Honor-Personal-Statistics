@@ -18,6 +18,8 @@ hero_list = ["Overall", "Warden", "Conqueror", "Peacekeeper", "Lawbringer", "Cen
                  "Raider", "Warlord", "Berserker", "Valkyrie", "Highlander", "Shaman", "Jormungandr", 
                  "Kensei", "Shugoki", "Orochi", "Nobushi", "Shinobi", "Aramusha", "Hitokiri", "Tiandi", "Jiang Jun", 
                  "Nuxia", "Shaolin", "Zhanhu"]
+hero_list_it = iter(hero_list)
+next(hero_list_it, None)
 
 #Initialize arrays for hero statistics (and put them in a list)
 overall_data = np.zeros((1, 20))
@@ -57,8 +59,6 @@ while user_input != "q":
     user_input = input()
 
     if user_input == "1":
-        hero_list_it = iter(hero_list)
-        next(hero_list_it, None)
         for i in hero_list_it:
             print(i)
         continue
@@ -107,7 +107,7 @@ while user_input != "q":
                 print("Invalid response, please try again\n\n")
                 continue
 
-            print("What was your skill leve realtive to your opponent? Enter one of the options below\n")
+            print("What was your skill level realtive to your opponent? Enter one of the options below\n")
             user_input = input("'higher' or 'same' or 'lower'\n")
             skill_level = user_input.lower()
             if (user_input == "q") or (user_input == "m"):
@@ -164,17 +164,17 @@ while user_input != "q":
 
         #Initilaize point weights for calculations
         #wins
-        h30 = 5
-        s30 = h31 = 4
-        l30 = s31 = h32 = 3
-        s32 = l31 = 2
-        l32 = 1
+        l30 = 5
+        s30 = l31 = 4
+        h30 = s31 = l32 = 3
+        s32 =h31 = 2
+        h32 = 1
         #losses
-        h23 = -1
-        s23 = h13 = -2
-        l23 = s13 = h03 = -3
-        s03 = l13 = -4
-        l03 = -5
+        l23 = -1
+        s23 = l13 = -2
+        h23 = s13 = l03 = -3
+        s03 = h13 = -4
+        h03 = -5
         
         #Create statistics files if they do not already exist and fill the statistics with zeros
         if os.path.isfile("Overall_stats") and os.path.isfile("Hero_stats"):
@@ -192,8 +192,6 @@ while user_input != "q":
         overall_data = np.load(file)
         file.close
         #Load the hero data into a list of seperate numpy arrays
-        hero_list_it = iter(hero_list)
-        next(hero_list_it, None)
         for i, j in enumerate (hero_list_it):
             file_list.append(open(j + "_data", "rb"))
             data_list.append(np.load(file_list[i]))
@@ -203,7 +201,7 @@ while user_input != "q":
         #Initialize statistics variables
         overall_wins = overall_data[0,0]
         overall_losses = overall_data[0,1]
-        overall_win_ratio = round((total_wins / (total_losses + total_wins)) * 100, 2)
+        overall_win_ratio = round((overall_wins / (overall_losses + overall_wins)) * 100, 2)
         overall_stats = np.array([overall_wins, overall_losses, overall_win_ratio])
 
         #Calculate the statistics for each hero
@@ -220,7 +218,7 @@ while user_input != "q":
         ##Calcualte the statistics and store them inside each hero stat array
         for i in range(len(stats_list)):
             a = data_list[i] #for simpler code
-            stats_list[i] = (np.zeros(108))
+            stats_list[i] = np.zeros(108)
             #Calcualte the total wins and losses and win ratio for the hero
             stats_list[i][0] =  np.sum(a[0:26, 0])
             stats_list[i][1] =  np.sum(a[0:26, 1])
@@ -244,7 +242,7 @@ while user_input != "q":
                 sum_losses = (h03 * a[k, 11] + s03 * a[k, 12] + l03 * a[k, 13] + h13 * a[k, 14] + s13 * a[k,15] + l13 * a[k, 16] +
                                  h23 * a[k, 17] + s23 * a[k, 18] + l23 * a[k, 19])
                 stats_list[i][81 + k] = (sum_wins + sum_losses) #The last 26 (81-106) are the match-up scores
-            stats_list[i][107] = np.sum(stats_list[i][81:107]) / 26 #Take the average of each match-up score to determine overall hero score
+            stats_list[i][107] = np.sum(stats_list[i][81:107]) / 26 #Take the average of the match-up scores to determine overall hero score
         print(stats_list[0])
 
         #Save the statistics arrays to the corresponding files
@@ -267,15 +265,35 @@ while user_input != "q":
         """)
         stat_option = input("Select option 'a' or 'b'\n")
         if stat_option == 'a':
-            #FIXME: Put this into a function
-            #FIXME: calculate the best and worst hero using the max and min values from each hero stat array (create a new array just containing the hero scores then do it)
-            with open("Overall_stats", "rb") as file:
-                stats = np.load(file)
-                print("""
-                Total wins: {0}
-                Total losses: {1}
-                Win ratio: {2}
-                """.format(stats[0], stats[1], stats[2]))
+            #Determine the best and worst 3 heroes based on hero score using a dictionary
+            with open("Hero_stats", "rb") as hero_file:
+                stats = np.load(hero_file)
+                hero_scores = {}
+                for i, hero in enumerate(hero_list_it):
+                    hero_scores.update({hero : stats[i][107]})
+            #Obtain the top 3 heroes and worst 3 heroes
+            best = []
+            worst = []
+            for i in range(3):
+                best.append(max(hero_scores, key=hero_scores.get))
+                #worst.append(min(hero_scores, key=hero_scores.get))
+                del hero_scores[best[i]]
+                #del hero_scores[worst[i]]     
+                
+            with open("Overall_stats", "rb") as overall_file:
+                stats = np.load(overall_file)
+            print("""
+            Total wins: {0}
+            Total losses: {1}
+            Win ratio: %{2}
+            
+            Best 3 Heroes:
+            1. {3}
+            2. {4}
+            3. {5}
+            """.format(stats[0], stats[1], stats[2], best[0], best[1], best[2]))
+            #FIXME: Put this into function
+
         if stat_option == 'b':
             #FIXME: Put this into a function
             with open("Hero_stats") as file:

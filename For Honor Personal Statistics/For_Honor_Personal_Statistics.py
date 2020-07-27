@@ -296,12 +296,21 @@ while user_input != "q":
 
         if stat_option == 'b':
             #FIXME: Put this into a function
-            with open("Hero_stats") as file:
+            with open("Hero_stats", "rb") as file:
                 stats = np.load(file)
-                #FIXME: determine the best 3 matchups and worst 3 matchups from the appropriate elements from the stat array
-                #FIXME: print wins, losses, ratio, best matchups, worst matchups, overall hero score
+                option = input("""
+                    Which hero statistics would you like to see?
+                    Please enter hero name
+                """)
+                option = option.title()
+                if option = "Warden":
+                    #FIXME - create a function that selects the correct statistics based on the hero selected (gives a number 0 through 25 as the 
+                        #stats array is a 2D array with 26 rows (for each hero), so this option selects the appropriate row and then the function gets 
+                        #the needed statistics and displaus them : wins, losses, win%, best 3 match ups, worst 3 matchups
 
-                
+                        #FIXME: Add an option to select the opponent you want the stats about, for example:
+                            #Warden vs Conq - show wins, losses, %, matchup score for my warden against conquerors
+                                                                
          
     elif (user_input == "q") or (user_input == "m"):
         continue
